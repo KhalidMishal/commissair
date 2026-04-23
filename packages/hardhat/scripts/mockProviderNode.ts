@@ -35,15 +35,12 @@ async function main() {
       }
 
       if (status === 0 && now > commission.bidDeadline) {
-        const bids = await market.getCommissionBids(commissionId);
-        if (bids.length > 0) {
-          try {
-            const tx = await market.finalizeLowestBid(commissionId);
-            await tx.wait();
-            console.log(`Finalized lowest bid for commission #${commissionId}`);
-          } catch (error) {
-            console.log(`Finalize skipped for #${commissionId}: ${(error as Error).message}`);
-          }
+        try {
+          const tx = await market.settleExpiredCommission(commissionId);
+          await tx.wait();
+          console.log(`Settled expired commission #${commissionId}`);
+        } catch (error) {
+          console.log(`Settle skipped for #${commissionId}: ${(error as Error).message}`);
         }
       }
 

@@ -29,6 +29,7 @@ const contractABI = [
   "function nextCommissionId() external view returns (uint256)",
   "function placeBid(uint256 commissionId, uint256 amount, string calldata endpointURI) external returns (uint256 bidId)",
   "function finalizeLowestBid(uint256 commissionId) external",
+  "function settleExpiredCommission(uint256 commissionId) external",
   "function submitDelivery(uint256 commissionId, string calldata resultURI) external",
   "function getCommission(uint256 commissionId) external view returns (tuple(address consumer, address creator, uint256 maxBudget, uint256 acceptedAmount, uint256 bidDeadline, uint256 reviewDeadline, uint8 status, string promptURI, string resultURI))",
   "function getCommissionBids(uint256 commissionId) external view returns (tuple(address creator, uint256 amount, string endpointURI, bool active)[])",
@@ -87,15 +88,24 @@ async function main() {
       }
 
       if (status === 0 && now > commission.bidDeadline) {
-        const bids = await contract.getCommissionBids(commissionId);
-        if (bids.length > 0) {
-          try {
-            console.log(`[#${key}] Finalizing auction...`);
-            const tx = await contract.finalizeLowestBid(commissionId);
-            await tx.wait();
-            console.log(`[#${key}] ✅ Auction finalized: ${tx.hash}`);
-          } catch (error) {
-            console.log(`[#${key}] Finalize skipped: ${error.shortMessage || error.message}`);
+        try {
+          console.log(`[#${key}] Settling expired commission...`);
+          const tx = await contract.settleExpiredCommission(commissionId);
+          await tx.wait();
+          console.log(`[#${key}] ✅ Expired commission settled: ${tx.hash}`);
+        } catch (error) {
+          const bids = await contract.getCommissionBids(commissionId);
+          if (bids.length > 0) {
+            try {
+              console.log(`[#${key}] Settlement unavailable; finalizing lowest bid...`);
+              const tx = await contract.finalizeLowestBid(commissionId);
+              await tx.wait();
+              console.log(`[#${key}] ✅ Auction finalized: ${tx.hash}`);
+            } catch (finalizeError) {
+              console.log(`[#${key}] Finalize skipped: ${finalizeError.shortMessage || finalizeError.message}`);
+            }
+          } else {
+            console.log(`[#${key}] Settle skipped: ${error.shortMessage || error.message}`);
           }
         }
       }
