@@ -7,7 +7,7 @@ This is the middleman server for the Monad AI Market MVP. It acts as both the ba
 - Listens to the Monad smart contract for new AI queries (`CommissionCreated`).
 - Automatically reverse-bids on active queries.
 - Triggers the auction finalization after the time window closes.
-- If won, generates the AI response using Google Gemini API (`gemini-1.5-flash`).
+- If won, generates the AI response using Google Gemini API (`gemini-2.0-flash`).
 - Automatically delivers the result and receives payment from escrow.
 
 ## Setup
@@ -21,7 +21,9 @@ This is the middleman server for the Monad AI Market MVP. It acts as both the ba
    - `PRIVATE_KEY`: A funded private key to cover gas for bids and delivery.
    - `CONTRACT_ADDRESS`: The deployed address of `CommissionMarket.sol`.
    - `GEMINI_API_KEY`: Your Google Gemini API key. If omitted, the server will fall back to returning mock generated text.
-   - `GEMINI_MODEL`: Optional Gemini model name. Defaults to `gemini-1.5-flash`.
+   - `GEMINI_MODEL`: Optional Gemini model name. Defaults to `gemini-2.0-flash`.
+   - `GEMINI_MODELS`: Optional comma-separated fallback list, for example `gemini-2.0-flash,gemini-2.5-flash`.
+   - `GEMINI_FALLBACK_TO_MOCK`: Optional demo fallback. Set to `true` to submit a local mock response when Gemini quota is exhausted.
    - `PROVIDER_BID_MON`: Optional fixed bid amount in MON. Defaults to `0.005`.
 
 3. Install dependencies:
