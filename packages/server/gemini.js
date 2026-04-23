@@ -4,6 +4,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
  * Initializes and returns a function to generate text using the Gemini API.
  */
 function initGemini(apiKey) {
+  const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+  const maxChars = Number(process.env.GEMINI_MAX_RESULT_CHARS || "6000");
+
   if (!apiKey) {
     console.warn("WARN: GEMINI_API_KEY is not set. Using mock generation.");
     return async (prompt) => {
@@ -14,17 +17,27 @@ function initGemini(apiKey) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // We use gemini-1.5-flash as it's fast and suitable for this hackathon
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   return async (prompt) => {
     try {
-      console.log(`[Gemini] Generating response for prompt: "${prompt}"...`);
-      const result = await model.generateContent(prompt);
+      console.log(`[Gemini] Generating response with ${modelName}...`);
+      const result = await model.generateContent([
+        "You are fulfilling a paid AI commission. Answer the user's request directly and concisely.",
+        "Do not include markdown fences unless the user specifically asks for code.",
+        "",
+        "User commission:",
+        prompt,
+      ].join("\n"));
       const response = await result.response;
-      const text = response.text();
+      const text = response.text().trim();
       console.log(`[Gemini] Generation complete!`);
-      return text;
+
+      if (Number.isFinite(maxChars) && maxChars > 0 && text.length > maxChars) {
+        return `${text.slice(0, maxChars)}\n\n[Truncated to ${maxChars} characters for on-chain delivery.]`;
+      }
+
+      return text || "(Gemini returned an empty response.)";
     } catch (error) {
       console.error("[Gemini] API Error:", error);
       return `[Error generating response: ${error.message}]`;

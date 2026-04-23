@@ -21,15 +21,17 @@ This is the middleman server for the Monad AI Market MVP. It acts as both the ba
    - `PRIVATE_KEY`: A funded private key to cover gas for bids and delivery.
    - `CONTRACT_ADDRESS`: The deployed address of `CommissionMarket.sol`.
    - `GEMINI_API_KEY`: Your Google Gemini API key. If omitted, the server will fall back to returning mock generated text.
+   - `GEMINI_MODEL`: Optional Gemini model name. Defaults to `gemini-1.5-flash`.
+   - `PROVIDER_BID_MON`: Optional fixed bid amount in MON. Defaults to `0.005`.
 
 3. Install dependencies:
    ```bash
-   npm install
+   yarn install
    ```
 
 4. Start the server:
    ```bash
-   npm start
+   yarn server:start
    ```
 
-The server will stay running and listen for events on the blockchain!
+The server will stay running, poll the contract for open commissions, bid on them, finalize the auction after the bid window closes, send won prompts to Gemini, and submit Gemini's response back to `CommissionMarket`.

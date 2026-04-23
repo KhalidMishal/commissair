@@ -44,6 +44,7 @@
     "precommit": "lint-staged",
     "provider:gemini": "yarn workspace @se-2/hardhat provider:gemini",
     "provider:mock": "yarn workspace @se-2/hardhat provider:mock",
+    "server:start": "yarn workspace server start",
     "start": "yarn workspace @se-2/nextjs dev",
     "test": "yarn hardhat:test",
     "vercel": "yarn workspace @se-2/nextjs vercel",
