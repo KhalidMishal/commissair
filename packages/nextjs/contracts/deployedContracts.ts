@@ -1395,6 +1395,19 @@ const deployedContracts = {
               name: "commissionId",
               type: "uint256",
             },
+          ],
+          name: "settleExpiredCommission",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
             {
               internalType: "string",
               name: "resultURI",

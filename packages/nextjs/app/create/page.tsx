@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NextPage } from "next";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
@@ -8,8 +8,9 @@ import { ArrowPathIcon, PaperAirplaneIcon, SparklesIcon, WalletIcon } from "@her
 import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
-const AUCTION_SECONDS = 5n;
+const AUCTION_SECONDS = 10n;
 const COMMISSION_PAGE_SIZE = 25n;
+const demoBaselineKey = (chainId: number) => `commissair:demoBaseline:${chainId}`;
 
 type Commission = {
   consumer: string;
@@ -31,7 +32,7 @@ const statusCopy = (commission: Commission) => {
   if (commission.status === 1) return "Provider selected and generating";
   if (commission.status === 2) return "Result received";
   if (commission.status === 3) return `Paid ${formatMon(commission.acceptedAmount)} to the provider`;
-  return "Session cancelled";
+  return "Search timed out and budget refunded";
 };
 
 const resultText = (value: string) => {
@@ -60,6 +61,8 @@ const Home: NextPage = () => {
 
   const [prompt, setPrompt] = useState("");
   const [budget, setBudget] = useState("0.25");
+  const [hiddenBeforeCommissionId, setHiddenBeforeCommissionId] = useState(0n);
+  const settlingCommissionIds = useRef(new Set<string>());
 
   const { data: nextCommissionId } = useScaffoldReadContract({
     contractName: "CommissionMarket",
@@ -72,13 +75,74 @@ const Home: NextPage = () => {
     args: [0n, COMMISSION_PAGE_SIZE],
   });
 
+  useEffect(() => {
+    const savedBaseline = window.localStorage.getItem(demoBaselineKey(targetNetwork.id));
+    setHiddenBeforeCommissionId(savedBaseline ? BigInt(savedBaseline) : 0n);
+  }, [targetNetwork.id]);
+
   const chatItems = useMemo(() => {
     const lowerAddress = connectedAddress?.toLowerCase();
 
     return (commissions as readonly Commission[])
       .map((commission, index) => ({ commission, id: BigInt(index) }))
-      .filter(({ commission }) => !lowerAddress || commission.consumer.toLowerCase() === lowerAddress);
-  }, [commissions, connectedAddress]);
+      .filter(({ commission, id }) => {
+        const isCurrentWallet = !lowerAddress || commission.consumer.toLowerCase() === lowerAddress;
+        return isCurrentWallet && id >= hiddenBeforeCommissionId;
+      });
+  }, [commissions, connectedAddress, hiddenBeforeCommissionId]);
+
+  const clearVisibleHistory = () => {
+    if (nextCommissionId === undefined) return;
+
+    const baseline = BigInt(nextCommissionId);
+    window.localStorage.setItem(demoBaselineKey(targetNetwork.id), baseline.toString());
+    setHiddenBeforeCommissionId(baseline);
+    notification.success("Previous commissions hidden for this browser");
+  };
+
+  const cancelExpiredCommission = useCallback(
+    async (commissionId: bigint) => {
+      const key = commissionId.toString();
+      if (settlingCommissionIds.current.has(key)) return;
+
+      settlingCommissionIds.current.add(key);
+      try {
+        await writeContractAsync(
+          {
+            functionName: "cancelOpenCommission",
+            args: [commissionId],
+          },
+          {
+            onBlockConfirmation: () => {
+              notification.success("Search timed out and budget was refunded");
+              refetch();
+            },
+          },
+        );
+      } catch {
+        settlingCommissionIds.current.delete(key);
+      }
+    },
+    [refetch, writeContractAsync],
+  );
+
+  useEffect(() => {
+    if (!connectedAddress) return;
+
+    const intervalId = window.setInterval(() => {
+      const now = BigInt(Math.floor(Date.now() / 1000));
+      const expiredOpenCommission = chatItems.find(
+        ({ commission, id }) =>
+          commission.status === 0 && now > commission.bidDeadline && !settlingCommissionIds.current.has(id.toString()),
+      );
+
+      if (expiredOpenCommission) {
+        void cancelExpiredCommission(expiredOpenCommission.id);
+      }
+    }, 1_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [cancelExpiredCommission, chatItems, connectedAddress]);
 
   const sendPrompt = async (event: FormEvent) => {
     event.preventDefault();
@@ -205,8 +269,8 @@ const Home: NextPage = () => {
           <div className="stats stats-vertical w-full border border-primary/10 bg-base-100 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <div className="stat">
               <div className="stat-title">Prompts</div>
-              <div className="stat-value text-2xl">{nextCommissionId?.toString() ?? "0"}</div>
-              <div className="stat-desc">On-chain sessions</div>
+              <div className="stat-value text-2xl">{chatItems.length.toString()}</div>
+              <div className="stat-desc">Visible sessions</div>
             </div>
             <div className="stat">
               <div className="stat-title">Auction</div>
@@ -214,6 +278,15 @@ const Home: NextPage = () => {
               <div className="stat-desc">Hardcoded MVP window</div>
             </div>
           </div>
+
+          <button
+            className="btn btn-outline btn-primary w-full"
+            disabled={nextCommissionId === undefined}
+            onClick={clearVisibleHistory}
+            type="button"
+          >
+            Clear visible history
+          </button>
 
           <div className="rounded-box border border-primary/10 bg-base-100 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <h2 className="font-semibold">Provider Node</h2>

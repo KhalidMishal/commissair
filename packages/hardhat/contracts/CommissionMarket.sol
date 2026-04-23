@@ -54,7 +54,12 @@ contract CommissionMarket is ReentrancyGuard {
         string endpointURI
     );
     event BidAccepted(uint256 indexed commissionId, uint256 indexed bidId, address indexed creator, uint256 amount);
-    event DeliverySubmitted(uint256 indexed commissionId, address indexed creator, string resultURI, uint256 reviewDeadline);
+    event DeliverySubmitted(
+        uint256 indexed commissionId,
+        address indexed creator,
+        string resultURI,
+        uint256 reviewDeadline
+    );
     event CommissionPaid(uint256 indexed commissionId, address indexed creator, uint256 amount, uint256 refund);
     event CommissionCancelled(uint256 indexed commissionId, uint256 refund);
 
@@ -75,7 +80,10 @@ contract CommissionMarket is ReentrancyGuard {
     error ReviewStillOpen();
     error TransferFailed();
 
-    function createCommission(string calldata promptURI, uint256 bidWindow) external payable returns (uint256 commissionId) {
+    function createCommission(
+        string calldata promptURI,
+        uint256 bidWindow
+    ) external payable returns (uint256 commissionId) {
         if (bytes(promptURI).length == 0) revert EmptyPrompt();
         if (bidWindow < MIN_BID_WINDOW) revert InvalidBidWindow();
         if (msg.value == 0) revert NoEscrow();
@@ -98,7 +106,11 @@ contract CommissionMarket is ReentrancyGuard {
         emit CommissionCreated(commissionId, msg.sender, msg.value, bidDeadline, promptURI);
     }
 
-    function placeBid(uint256 commissionId, uint256 amount, string calldata endpointURI) external returns (uint256 bidId) {
+    function placeBid(
+        uint256 commissionId,
+        uint256 amount,
+        string calldata endpointURI
+    ) external returns (uint256 bidId) {
         Commission storage commission = commissions[commissionId];
         if (commission.status != Status.Open) revert NotOpen();
         if (block.timestamp > commission.bidDeadline) revert BidClosed();
@@ -106,7 +118,9 @@ contract CommissionMarket is ReentrancyGuard {
         if (bytes(endpointURI).length == 0) revert EmptyEndpoint();
 
         bidId = commissionBids[commissionId].length;
-        commissionBids[commissionId].push(Bid({ creator: msg.sender, amount: amount, endpointURI: endpointURI, active: true }));
+        commissionBids[commissionId].push(
+            Bid({ creator: msg.sender, amount: amount, endpointURI: endpointURI, active: true })
+        );
 
         emit BidPlaced(commissionId, bidId, msg.sender, amount, endpointURI);
     }
@@ -136,23 +150,21 @@ contract CommissionMarket is ReentrancyGuard {
         Bid[] storage bids = commissionBids[commissionId];
         if (bids.length == 0) revert NoBids();
 
-        uint256 winningBidId = 0;
-        uint256 winningAmount = type(uint256).max;
-        for (uint256 bidId = 0; bidId < bids.length; bidId++) {
-            if (bids[bidId].active && bids[bidId].amount < winningAmount) {
-                winningBidId = bidId;
-                winningAmount = bids[bidId].amount;
-            }
+        _acceptLowestBid(commissionId, commission, bids);
+    }
+
+    function settleExpiredCommission(uint256 commissionId) external nonReentrant {
+        Commission storage commission = commissions[commissionId];
+        if (commission.status != Status.Open) revert NotOpen();
+        if (block.timestamp <= commission.bidDeadline) revert BidClosed();
+
+        Bid[] storage bids = commissionBids[commissionId];
+        if (bids.length == 0) {
+            _cancelCommission(commissionId, commission);
+            return;
         }
 
-        if (winningAmount == type(uint256).max) revert NoBids();
-
-        Bid storage bid = bids[winningBidId];
-        commission.creator = bid.creator;
-        commission.acceptedAmount = bid.amount;
-        commission.status = Status.Assigned;
-
-        emit BidAccepted(commissionId, winningBidId, bid.creator, bid.amount);
+        _acceptLowestBid(commissionId, commission, bids);
     }
 
     function submitDelivery(uint256 commissionId, string calldata resultURI) external nonReentrant {
@@ -193,11 +205,7 @@ contract CommissionMarket is ReentrancyGuard {
         if (commission.status != Status.Open) revert NotOpen();
         if (block.timestamp <= commission.bidDeadline) revert BidClosed();
 
-        uint256 refund = commission.maxBudget;
-        commission.status = Status.Cancelled;
-
-        _sendValue(commission.consumer, refund);
-        emit CommissionCancelled(commissionId, refund);
+        _cancelCommission(commissionId, commission);
     }
 
     function getCommission(uint256 commissionId) external view returns (Commission memory) {
@@ -231,6 +239,34 @@ contract CommissionMarket is ReentrancyGuard {
         for (uint256 id = startId; id < endId; id++) {
             items[id - startId] = commissions[id];
         }
+    }
+
+    function _acceptLowestBid(uint256 commissionId, Commission storage commission, Bid[] storage bids) private {
+        uint256 winningBidId = 0;
+        uint256 winningAmount = type(uint256).max;
+        for (uint256 bidId = 0; bidId < bids.length; bidId++) {
+            if (bids[bidId].active && bids[bidId].amount < winningAmount) {
+                winningBidId = bidId;
+                winningAmount = bids[bidId].amount;
+            }
+        }
+
+        if (winningAmount == type(uint256).max) revert NoBids();
+
+        Bid storage bid = bids[winningBidId];
+        commission.creator = bid.creator;
+        commission.acceptedAmount = bid.amount;
+        commission.status = Status.Assigned;
+
+        emit BidAccepted(commissionId, winningBidId, bid.creator, bid.amount);
+    }
+
+    function _cancelCommission(uint256 commissionId, Commission storage commission) private {
+        uint256 refund = commission.maxBudget;
+        commission.status = Status.Cancelled;
+
+        _sendValue(commission.consumer, refund);
+        emit CommissionCancelled(commissionId, refund);
     }
 
     function _payCommission(uint256 commissionId, Commission storage commission) private {

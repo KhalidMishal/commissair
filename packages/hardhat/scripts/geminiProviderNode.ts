@@ -87,30 +87,23 @@ async function main() {
         }
 
         // ------------------------------------------------------------------
-        // Phase 2 — Finalize the lowest bid once the auction window closes
-        //           (anyone may call finalizeLowestBid — we do it as a service)
+        // Phase 2 — Settle once the auction window closes. This either accepts
+        // the lowest bid or cancels/refunds if no provider bid in time.
         // ------------------------------------------------------------------
         if (status === 0 && now > commission.bidDeadline) {
-          const bids = await market.getCommissionBids(commissionId);
-          if (bids.length > 0) {
-            try {
-              const tx = await market.finalizeLowestBid(commissionId);
-              await tx.wait();
-              console.log(`[#${key}] Auction finalized — lowest bid wins`);
-            } catch {
-              // Another node may have already finalized it — silently ignore.
-            }
+          try {
+            const tx = await market.settleExpiredCommission(commissionId);
+            await tx.wait();
+            console.log(`[#${key}] Expired commission settled`);
+          } catch {
+            // Another node may have already settled it — silently ignore.
           }
         }
 
         // ------------------------------------------------------------------
         // Phase 3 — We won: run the prompt through Gemini and submit result
         // ------------------------------------------------------------------
-        if (
-          status === 1 &&
-          commission.creator.toLowerCase() === providerAddress.toLowerCase() &&
-          !submitted.has(key)
-        ) {
+        if (status === 1 && commission.creator.toLowerCase() === providerAddress.toLowerCase() && !submitted.has(key)) {
           submitted.add(key); // mark first so a crash won't retry endlessly in this session
           console.log(`[#${key}] Commission assigned to us — generating response...`);
           console.log(`  Prompt: "${commission.promptURI.slice(0, 80)}${commission.promptURI.length > 80 ? "…" : ""}"`);

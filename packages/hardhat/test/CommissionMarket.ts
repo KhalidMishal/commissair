@@ -66,6 +66,48 @@ describe("CommissionMarket", function () {
     expect(commission.resultURI).to.equal("ipfs://result");
   });
 
+  it("settles an expired commission by accepting the lowest bid", async function () {
+    const { consumer, creator, otherCreator, market } = await deployFixture();
+    const maxBudget = ethers.parseEther("5");
+    const winningBid = ethers.parseEther("2");
+    const losingBid = ethers.parseEther("3");
+
+    await market.connect(consumer).createCommission("ipfs://prompt", 10, { value: maxBudget });
+    await market.connect(otherCreator).placeBid(0, losingBid, "https://expensive.example/run");
+    await market.connect(creator).placeBid(0, winningBid, "https://fast.example/run");
+    await time.increase(11);
+
+    await expect(market.connect(otherCreator).settleExpiredCommission(0))
+      .to.emit(market, "BidAccepted")
+      .withArgs(0, 1, creator.address, winningBid);
+
+    const commission = await market.getCommission(0);
+    expect(commission.status).to.equal(1);
+    expect(commission.creator).to.equal(creator.address);
+    expect(commission.acceptedAmount).to.equal(winningBid);
+  });
+
+  it("settles an expired commission by cancelling and refunding when there are no bids", async function () {
+    const { consumer, otherCreator, market } = await deployFixture();
+    const maxBudget = ethers.parseEther("1");
+
+    await market.connect(consumer).createCommission("ipfs://prompt", 10, { value: maxBudget });
+    await time.increase(11);
+
+    await expect(market.connect(otherCreator).settleExpiredCommission(0)).to.changeEtherBalances(
+      [market, consumer],
+      [-maxBudget, maxBudget],
+    );
+
+    await expect(market.connect(otherCreator).settleExpiredCommission(0)).to.be.revertedWithCustomError(
+      market,
+      "NotOpen",
+    );
+
+    const commission = await market.getCommission(0);
+    expect(commission.status).to.equal(4);
+  });
+
   it("still allows the consumer to manually accept a bid after the deadline", async function () {
     const { consumer, creator, market } = await deployFixture();
     const maxBudget = ethers.parseEther("1");

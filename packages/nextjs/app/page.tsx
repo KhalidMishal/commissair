@@ -26,7 +26,7 @@ const Home: NextPage = () => {
               The Future of Compute is Commissair
             </div>
 
-            <h1 className="hero-reveal hero-reveal-delay-1 text-6xl font-black leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-secondary md:text-8xl drop-shadow-lg">
+            <h1 className="hero-reveal hero-reveal-delay-1 text-6xl font-black leading-[1.12] text-primary md:text-8xl">
               Decentralized AI.
               <br /> Fulfilled by Reality.
             </h1>
@@ -141,14 +141,14 @@ const Home: NextPage = () => {
             <h2 className="text-3xl font-black text-white md:text-5xl">How the Network Works</h2>
           </div>
 
-          <div className="relative">
+          <div className="relative pt-2">
             {/* Connecting Line */}
-            <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-primary to-primary/20 -translate-y-1/2 hidden md:block"></div>
+            <div className="absolute left-0 top-[42px] hidden h-0.5 w-full bg-gradient-to-r from-primary/20 via-primary/70 to-primary/20 md:block"></div>
 
-            <div className="grid gap-12 md:grid-cols-3 relative z-10">
+            <div className="grid gap-14 md:grid-cols-3 relative z-10">
               {/* Step 1 */}
               <div className="relative flex flex-col items-center text-center group">
-                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-primary grid place-items-center mb-6 shadow-[0_0_30px_rgba(65,156,255,0.4)] transition-transform duration-500 group-hover:scale-110">
+                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-primary grid place-items-center mb-9 shadow-[0_0_30px_rgba(65,156,255,0.4)] transition-transform duration-500 group-hover:scale-110">
                   <UserCircleIcon className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">1. Commission</h3>
@@ -159,7 +159,7 @@ const Home: NextPage = () => {
 
               {/* Step 2 */}
               <div className="relative flex flex-col items-center text-center group">
-                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-accent grid place-items-center mb-6 shadow-[0_0_30px_rgba(111,182,255,0.4)] transition-transform duration-500 group-hover:scale-110">
+                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-accent grid place-items-center mb-9 shadow-[0_0_30px_rgba(111,182,255,0.4)] transition-transform duration-500 group-hover:scale-110">
                   <BoltIcon className="w-8 h-8 text-accent" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">2. Auction</h3>
@@ -170,7 +170,7 @@ const Home: NextPage = () => {
 
               {/* Step 3 */}
               <div className="relative flex flex-col items-center text-center group">
-                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-success grid place-items-center mb-6 shadow-[0_0_30px_rgba(101,231,194,0.4)] transition-transform duration-500 group-hover:scale-110">
+                <div className="w-20 h-20 rounded-full bg-base-100 border-4 border-success grid place-items-center mb-9 shadow-[0_0_30px_rgba(101,231,194,0.4)] transition-transform duration-500 group-hover:scale-110">
                   <CurrencyDollarIcon className="w-8 h-8 text-success" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">3. Delivery</h3>
