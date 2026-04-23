@@ -58,5 +58,8 @@
   "packageManager": "yarn@4.13.0",
   "engines": {
     "node": ">=20.18.3"
+  },
+  "dependencies": {
+    "yarn": "^1.22.22"
   }
 }
