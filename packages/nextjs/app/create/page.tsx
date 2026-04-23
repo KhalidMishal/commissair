@@ -42,7 +42,11 @@ const resultText = (value: string) => {
 const ChatBubble = ({ side, children }: { side: "start" | "end"; children: React.ReactNode }) => (
   <div className={`chat ${side === "end" ? "chat-end" : "chat-start"}`}>
     <div
-      className={`chat-bubble max-w-[85%] ${side === "end" ? "chat-bubble-primary" : "bg-base-200 text-base-content"}`}
+      className={`chat-bubble max-w-[85%] ${
+        side === "end"
+          ? "chat-bubble-primary shadow-[0_10px_30px_rgba(158,208,255,0.16)]"
+          : "border border-primary/10 bg-base-200 text-base-content"
+      }`}
     >
       {children}
     </div>
@@ -96,8 +100,8 @@ const Home: NextPage = () => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-base-200">
-      <section className="border-b border-base-300 bg-base-100">
+    <main className="page-reveal flex min-h-screen flex-col bg-base-200">
+      <section className="border-b border-primary/10 bg-base-100/80 shadow-[0_18px_60px_rgba(0,0,0,0.2)] backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-5 py-5 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-primary">
@@ -107,14 +111,14 @@ const Home: NextPage = () => {
             <h1 className="mt-1 text-3xl font-bold md:text-4xl">Decentralized AI chat on Monad</h1>
           </div>
           <div className="text-sm text-base-content/60">
-            Network: <span className="font-semibold text-base-content">{targetNetwork.name}</span>
+            Network: <span className="font-semibold text-primary">{targetNetwork.name}</span>
           </div>
         </div>
       </section>
 
       <section className="mx-auto grid w-full max-w-6xl grow gap-5 px-5 py-5 lg:grid-cols-[1fr_300px]">
-        <div className="flex min-h-[70vh] flex-col rounded-box bg-base-100 shadow">
-          <div className="border-b border-base-300 px-5 py-4">
+        <div className="panel-reveal panel-reveal-delay-1 flex min-h-[70vh] flex-col rounded-box border border-primary/10 bg-base-100 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+          <div className="border-b border-primary/10 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="font-semibold">AI Session</h2>
@@ -164,9 +168,9 @@ const Home: NextPage = () => {
             )}
           </div>
 
-          <form className="border-t border-base-300 p-4" onSubmit={sendPrompt}>
+          <form className="border-t border-primary/10 bg-base-300/30 p-4" onSubmit={sendPrompt}>
             <div className="flex flex-col gap-3 md:flex-row">
-              <label className="input input-bordered flex items-center gap-2 md:w-36">
+              <label className="input input-bordered flex items-center gap-2 border-primary/15 bg-base-200 md:w-36">
                 <WalletIcon className="h-5 w-5 opacity-60" />
                 <input
                   className="w-full"
@@ -179,13 +183,17 @@ const Home: NextPage = () => {
                 />
               </label>
               <input
-                className="input input-bordered flex-1"
+                className="input input-bordered flex-1 border-primary/15 bg-base-200"
                 placeholder="Ask for a research brief, image, code patch, file conversion..."
                 required
                 value={prompt}
                 onChange={event => setPrompt(event.target.value)}
               />
-              <button className="btn btn-primary" disabled={!connectedAddress || isMining} type="submit">
+              <button
+                className="btn btn-primary transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(158,208,255,0.2)]"
+                disabled={!connectedAddress || isMining}
+                type="submit"
+              >
                 {isMining ? <span className="loading loading-spinner" /> : <PaperAirplaneIcon className="h-5 w-5" />}
                 Send
               </button>
@@ -193,8 +201,8 @@ const Home: NextPage = () => {
           </form>
         </div>
 
-        <aside className="space-y-4">
-          <div className="stats stats-vertical w-full bg-base-100 shadow">
+        <aside className="panel-reveal panel-reveal-delay-2 space-y-4">
+          <div className="stats stats-vertical w-full border border-primary/10 bg-base-100 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <div className="stat">
               <div className="stat-title">Prompts</div>
               <div className="stat-value text-2xl">{nextCommissionId?.toString() ?? "0"}</div>
@@ -207,9 +215,9 @@ const Home: NextPage = () => {
             </div>
           </div>
 
-          <div className="rounded-box bg-base-100 p-4 shadow">
+          <div className="rounded-box border border-primary/10 bg-base-100 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <h2 className="font-semibold">Provider Node</h2>
-            <div className="mt-3 rounded-box bg-base-200 p-3 font-mono text-xs">
+            <div className="mt-3 rounded-box border border-primary/10 bg-base-200 p-3 font-mono text-xs text-primary">
               yarn provider:mock --network localhost
             </div>
             <p className="mt-3 text-sm text-base-content/60">

@@ -21,6 +21,30 @@
   }
 }
 
+@keyframes page-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panel-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @plugin "daisyui" {
   themes:
     light,
@@ -30,22 +54,22 @@
 @plugin "daisyui/theme" {
   name: "light";
 
-  --color-primary: #93bbfb;
-  --color-primary-content: #212638;
-  --color-secondary: #dae8ff;
-  --color-secondary-content: #212638;
-  --color-accent: #93bbfb;
-  --color-accent-content: #212638;
-  --color-neutral: #212638;
-  --color-neutral-content: #ffffff;
-  --color-base-100: #ffffff;
-  --color-base-200: #f4f8ff;
-  --color-base-300: #dae8ff;
-  --color-base-content: #212638;
-  --color-info: #93bbfb;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-primary: #9ed0ff;
+  --color-primary-content: #06101f;
+  --color-secondary: #3d7ec1;
+  --color-secondary-content: #edf7ff;
+  --color-accent: #6fb6ff;
+  --color-accent-content: #06101f;
+  --color-neutral: #07111f;
+  --color-neutral-content: #d8ebff;
+  --color-base-100: #0a1220;
+  --color-base-200: #050914;
+  --color-base-300: #101d31;
+  --color-base-content: #d8ebff;
+  --color-info: #9ed0ff;
+  --color-success: #65e7c2;
+  --color-warning: #f6d06f;
+  --color-error: #ff8f8f;
 
   --radius-field: 1rem;
   --radius-box: 1rem;
@@ -55,22 +79,22 @@
 @plugin "daisyui/theme" {
   name: "dark";
 
-  --color-primary: #212638;
-  --color-primary-content: #f9fbff;
-  --color-secondary: #323f61;
-  --color-secondary-content: #f9fbff;
-  --color-accent: #4969a6;
-  --color-accent-content: #f9fbff;
-  --color-neutral: #f9fbff;
-  --color-neutral-content: #385183;
-  --color-base-100: #385183;
-  --color-base-200: #2a3655;
-  --color-base-300: #212638;
-  --color-base-content: #f9fbff;
-  --color-info: #385183;
-  --color-success: #34eeb6;
-  --color-warning: #ffcf72;
-  --color-error: #ff8863;
+  --color-primary: #9ed0ff;
+  --color-primary-content: #06101f;
+  --color-secondary: #3d7ec1;
+  --color-secondary-content: #edf7ff;
+  --color-accent: #6fb6ff;
+  --color-accent-content: #06101f;
+  --color-neutral: #07111f;
+  --color-neutral-content: #d8ebff;
+  --color-base-100: #0a1220;
+  --color-base-200: #050914;
+  --color-base-300: #101d31;
+  --color-base-content: #d8ebff;
+  --color-info: #9ed0ff;
+  --color-success: #65e7c2;
+  --color-warning: #f6d06f;
+  --color-error: #ff8f8f;
 
   --radius-field: 1rem;
   --radius-box: 1rem;
@@ -88,6 +112,10 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   *,
   ::after,
   ::before,
@@ -149,4 +177,20 @@
 
 .hero-reveal-delay-3 {
   animation-delay: 390ms;
+}
+
+.page-reveal {
+  animation: page-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel-reveal {
+  animation: panel-reveal 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel-reveal-delay-1 {
+  animation-delay: 100ms;
+}
+
+.panel-reveal-delay-2 {
+  animation-delay: 180ms;
 }
