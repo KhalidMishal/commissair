@@ -73,7 +73,7 @@ const Home: NextPage = () => {
             </Link>
 
             <Link
-              href="#workflow"
+              href="/creator"
               className="group rounded-box border border-primary/15 bg-base-200 p-6 shadow-[0_20px_70px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 hover:border-primary/35 hover:bg-base-300"
             >
               <div className="flex h-full flex-col justify-between gap-8">
