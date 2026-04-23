@@ -32,6 +32,7 @@ const contractABI = [
   "function settleExpiredCommission(uint256 commissionId) external",
   "function submitDelivery(uint256 commissionId, string calldata resultURI) external",
   "function getCommission(uint256 commissionId) external view returns (tuple(address consumer, address creator, uint256 maxBudget, uint256 acceptedAmount, uint256 bidDeadline, uint256 reviewDeadline, uint8 status, string promptURI, string resultURI))",
+  "function getCommissions(uint256 startId, uint256 limit) external view returns (tuple(address consumer, address creator, uint256 maxBudget, uint256 acceptedAmount, uint256 bidDeadline, uint256 reviewDeadline, uint8 status, string promptURI, string resultURI)[])",
   "function getCommissionBids(uint256 commissionId) external view returns (tuple(address creator, uint256 amount, string endpointURI, bool active)[])",
 ];
 
@@ -52,13 +53,12 @@ async function main() {
   const submitted = new Set();
   const inFlight = new Set();
 
-  const handleCommission = async (commissionId) => {
+  const handleCommissionWithData = async (commissionId, commission) => {
     const key = commissionId.toString();
     if (inFlight.has(key)) return;
 
     inFlight.add(key);
     try {
-      const commission = await contract.getCommission(commissionId);
       const status = Number(commission.status);
       const now = BigInt(Math.floor(Date.now() / 1000));
 
@@ -81,7 +81,7 @@ async function main() {
         console.log(`   Prompt: "${commission.promptURI}"`);
         console.log(`   Placing bid: ${ethers.formatEther(bidAmount)} MON`);
 
-        const tx = await contract.placeBid(commissionId, bidAmount, `gemini://provider/${wallet.address}`);
+        const tx = await contract.placeBid(commissionId, bidAmount, `gemini://provider/${wallet.address}`, { gasLimit: 500000 });
         await tx.wait();
         seenBids.add(key);
         console.log(`   ✅ Bid placed: ${tx.hash}`);
@@ -90,7 +90,7 @@ async function main() {
       if (status === 0 && now > commission.bidDeadline) {
         try {
           console.log(`[#${key}] Settling expired commission...`);
-          const tx = await contract.settleExpiredCommission(commissionId);
+          const tx = await contract.settleExpiredCommission(commissionId, { gasLimit: 500000 });
           await tx.wait();
           console.log(`[#${key}] ✅ Expired commission settled: ${tx.hash}`);
         } catch (error) {
@@ -98,7 +98,7 @@ async function main() {
           if (bids.length > 0) {
             try {
               console.log(`[#${key}] Settlement unavailable; finalizing lowest bid...`);
-              const tx = await contract.finalizeLowestBid(commissionId);
+              const tx = await contract.finalizeLowestBid(commissionId, { gasLimit: 500000 });
               await tx.wait();
               console.log(`[#${key}] ✅ Auction finalized: ${tx.hash}`);
             } catch (finalizeError) {
@@ -122,7 +122,7 @@ async function main() {
         try {
           const aiResponseText = await generateAIResponse(commission.promptURI);
           console.log(`   Submitting delivery (${aiResponseText.length} chars)...`);
-          const tx = await contract.submitDelivery(commissionId, aiResponseText);
+          const tx = await contract.submitDelivery(commissionId, aiResponseText, { gasLimit: 1000000 });
           await tx.wait();
           console.log(`   ✅ Delivery submitted: ${tx.hash}`);
           console.log(`   💰 Escrow released automatically.`);
@@ -138,20 +138,32 @@ async function main() {
     }
   };
 
+  let isPolling = false;
   const scanCommissions = async () => {
-    const nextCommissionId = await contract.nextCommissionId();
-    for (let commissionId = 0n; commissionId < nextCommissionId; commissionId++) {
-      await handleCommission(commissionId);
+    if (isPolling) return;
+    isPolling = true;
+    try {
+      const nextCommissionId = await contract.nextCommissionId();
+      if (nextCommissionId === 0n) return;
+
+      // Batch fetch all commissions
+      const commissions = await contract.getCommissions(0, nextCommissionId);
+      for (let i = 0; i < commissions.length; i++) {
+        const commissionId = BigInt(i);
+        const commission = commissions[i];
+        
+        // Skip already completed/cancelled
+        const status = Number(commission.status);
+        if (status > 1) continue; 
+
+        await handleCommissionWithData(commissionId, commission);
+      }
+    } finally {
+      isPolling = false;
     }
   };
 
-  contract.on("CommissionCreated", async (commissionId) => {
-    await handleCommission(commissionId);
-  });
 
-  contract.on("BidAccepted", async (commissionId) => {
-    await handleCommission(commissionId);
-  });
 
   console.log(`🔁 Polling commissions every ${POLL_INTERVAL_MS}ms.`);
   scanCommissions().catch(error => {
