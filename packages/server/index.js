@@ -52,6 +52,7 @@ async function main() {
   const seenBids = new Set();
   const submitted = new Set();
   const inFlight = new Set();
+  const failedSettlements = new Set();
 
   const handleCommissionWithData = async (commissionId, commission) => {
     const key = commissionId.toString();
@@ -87,7 +88,7 @@ async function main() {
         console.log(`   ✅ Bid placed: ${tx.hash}`);
       }
 
-      if (status === 0 && now > commission.bidDeadline) {
+      if (status === 0 && now > commission.bidDeadline && !failedSettlements.has(key)) {
         try {
           console.log(`[#${key}] Settling expired commission...`);
           const tx = await contract.settleExpiredCommission(commissionId, { gasLimit: 500000 });
@@ -107,6 +108,7 @@ async function main() {
           } else {
             console.log(`[#${key}] Settle skipped: ${error.shortMessage || error.message}`);
           }
+          failedSettlements.add(key);
         }
       }
 
