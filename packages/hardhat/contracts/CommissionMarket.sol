@@ -33,6 +33,7 @@ contract CommissionMarket is ReentrancyGuard {
 
     uint256 public constant MIN_BID_WINDOW = 5 seconds;
     uint256 public constant DEFAULT_REVIEW_WINDOW = 1 days;
+    uint256 public constant NO_BID_TIMEOUT_AFTER_BIDDING = 170 seconds;
 
     uint256 public nextCommissionId;
 
@@ -76,6 +77,7 @@ contract CommissionMarket is ReentrancyGuard {
     error BidClosed();
     error InvalidBid();
     error BidTooHigh();
+    error BidSearchStillOpen();
     error NoBids();
     error ReviewStillOpen();
     error TransferFailed();
@@ -160,6 +162,9 @@ contract CommissionMarket is ReentrancyGuard {
 
         Bid[] storage bids = commissionBids[commissionId];
         if (bids.length == 0) {
+            if (block.timestamp <= commission.bidDeadline + NO_BID_TIMEOUT_AFTER_BIDDING) {
+                revert BidSearchStillOpen();
+            }
             _cancelCommission(commissionId, commission);
             return;
         }

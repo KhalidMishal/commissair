@@ -94,6 +94,13 @@ describe("CommissionMarket", function () {
     await market.connect(consumer).createCommission("ipfs://prompt", 10, { value: maxBudget });
     await time.increase(11);
 
+    await expect(market.connect(otherCreator).settleExpiredCommission(0)).to.be.revertedWithCustomError(
+      market,
+      "BidSearchStillOpen",
+    );
+
+    await time.increase(170);
+
     await expect(market.connect(otherCreator).settleExpiredCommission(0)).to.changeEtherBalances(
       [market, consumer],
       [-maxBudget, maxBudget],

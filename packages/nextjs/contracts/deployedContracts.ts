@@ -719,6 +719,11 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "BidSearchStillOpen",
+          type: "error",
+        },
+        {
+          inputs: [],
           name: "BidTooHigh",
           type: "error",
         },
@@ -999,6 +1004,19 @@ const deployedContracts = {
         {
           inputs: [],
           name: "MIN_BID_WINDOW",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "NO_BID_TIMEOUT_AFTER_BIDDING",
           outputs: [
             {
               internalType: "uint256",

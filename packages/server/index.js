@@ -10,6 +10,8 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS || "2000");
 const PROVIDER_BID = ethers.parseEther(process.env.PROVIDER_BID_MON || "0.005");
+const BIDDING_PHASE_SECONDS = 10n;
+const SEARCH_TIMEOUT_SECONDS = 180n;
 
 if (!PRIVATE_KEY || !CONTRACT_ADDRESS) {
   console.error("❌ Missing PRIVATE_KEY or CONTRACT_ADDRESS in environment variables.");
@@ -89,19 +91,26 @@ async function main() {
       }
 
       if (status === 0 && now > commission.bidDeadline && !failedSettlements.has(key)) {
-        failedSettlements.add(key);
+        const bids = await contract.getCommissionBids(commissionId);
+        const noBidTimeoutElapsed = now > commission.bidDeadline + SEARCH_TIMEOUT_SECONDS - BIDDING_PHASE_SECONDS;
+
+        if (bids.length === 0 && !noBidTimeoutElapsed) {
+          return;
+        }
+
         try {
           console.log(`[#${key}] Settling expired commission...`);
           const tx = await contract.settleExpiredCommission(commissionId, { gasLimit: 500000 });
           await tx.wait();
+          failedSettlements.add(key);
           console.log(`[#${key}] ✅ Expired commission settled: ${tx.hash}`);
         } catch (error) {
-          const bids = await contract.getCommissionBids(commissionId);
           if (bids.length > 0) {
             try {
               console.log(`[#${key}] Settlement unavailable; finalizing lowest bid...`);
               const tx = await contract.finalizeLowestBid(commissionId, { gasLimit: 500000 });
               await tx.wait();
+              failedSettlements.add(key);
               console.log(`[#${key}] ✅ Auction finalized: ${tx.hash}`);
             } catch (finalizeError) {
               console.log(`[#${key}] Finalize skipped: ${finalizeError.shortMessage || finalizeError.message}`);

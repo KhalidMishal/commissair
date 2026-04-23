@@ -12,6 +12,8 @@ import { CommissionMarket } from "../typechain-types";
 const POLL_INTERVAL_MS = 1_000;
 
 const DEFAULT_BID = ethers.parseEther(process.env.PROVIDER_BID_MON || "0.05");
+const BIDDING_PHASE_SECONDS = 10n;
+const SEARCH_TIMEOUT_SECONDS = 180n;
 const GEMINI_MODEL = process.env.PROVIDER_GEMINI_MODEL || "gemini-2.5-flash";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -91,6 +93,13 @@ async function main() {
         // the lowest bid or cancels/refunds if no provider bid in time.
         // ------------------------------------------------------------------
         if (status === 0 && now > commission.bidDeadline) {
+          const bids = await market.getCommissionBids(commissionId);
+          const noBidTimeoutElapsed = now > commission.bidDeadline + SEARCH_TIMEOUT_SECONDS - BIDDING_PHASE_SECONDS;
+
+          if (bids.length === 0 && !noBidTimeoutElapsed) {
+            continue;
+          }
+
           try {
             const tx = await market.settleExpiredCommission(commissionId);
             await tx.wait();

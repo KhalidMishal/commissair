@@ -8,7 +8,8 @@ import { ArrowPathIcon, PaperAirplaneIcon, SparklesIcon, WalletIcon } from "@her
 import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
-const AUCTION_SECONDS = 180n;
+const BIDDING_PHASE_SECONDS = 10n;
+const SEARCH_TIMEOUT_SECONDS = 180n;
 const COMMISSION_PAGE_SIZE = 25n;
 const demoBaselineKey = (chainId: number) => `commissair:demoBaseline:${chainId}`;
 
@@ -133,7 +134,9 @@ const Home: NextPage = () => {
       const now = BigInt(Math.floor(Date.now() / 1000));
       const expiredOpenCommission = chatItems.find(
         ({ commission, id }) =>
-          commission.status === 0 && now > commission.bidDeadline && !settlingCommissionIds.current.has(id.toString()),
+          commission.status === 0 &&
+          now > commission.bidDeadline + SEARCH_TIMEOUT_SECONDS - BIDDING_PHASE_SECONDS &&
+          !settlingCommissionIds.current.has(id.toString()),
       );
 
       if (expiredOpenCommission) {
@@ -150,7 +153,7 @@ const Home: NextPage = () => {
     await writeContractAsync(
       {
         functionName: "createCommission",
-        args: [prompt.trim(), AUCTION_SECONDS],
+        args: [prompt.trim(), BIDDING_PHASE_SECONDS],
         value: parseEther(budget || "0"),
       },
       {
@@ -187,7 +190,8 @@ const Home: NextPage = () => {
               <div>
                 <h2 className="font-semibold">AI Session</h2>
                 <p className="text-sm text-base-content/60">
-                  Reverse auction runs for {AUCTION_SECONDS.toString()} seconds.
+                  Bidding runs for {BIDDING_PHASE_SECONDS.toString()} seconds. Searches time out after 3 minutes without
+                  bids.
                 </p>
               </div>
               <button className="btn btn-ghost btn-sm" onClick={() => refetch()} type="button">
@@ -274,8 +278,13 @@ const Home: NextPage = () => {
             </div>
             <div className="stat">
               <div className="stat-title">Auction</div>
-              <div className="stat-value text-2xl">{AUCTION_SECONDS.toString()}s</div>
-              <div className="stat-desc">Hardcoded MVP window</div>
+              <div className="stat-value text-2xl">{BIDDING_PHASE_SECONDS.toString()}s</div>
+              <div className="stat-desc">Lowest bid window</div>
+            </div>
+            <div className="stat">
+              <div className="stat-title">Timeout</div>
+              <div className="stat-value text-2xl">3m</div>
+              <div className="stat-desc">No-bid cancellation</div>
             </div>
           </div>
 
