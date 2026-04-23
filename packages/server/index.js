@@ -89,6 +89,7 @@ async function main() {
       }
 
       if (status === 0 && now > commission.bidDeadline && !failedSettlements.has(key)) {
+        failedSettlements.add(key);
         try {
           console.log(`[#${key}] Settling expired commission...`);
           const tx = await contract.settleExpiredCommission(commissionId, { gasLimit: 500000 });
@@ -108,7 +109,6 @@ async function main() {
           } else {
             console.log(`[#${key}] Settle skipped: ${error.shortMessage || error.message}`);
           }
-          failedSettlements.add(key);
         }
       }
 
@@ -124,7 +124,7 @@ async function main() {
         try {
           const aiResponseText = await generateAIResponse(commission.promptURI);
           console.log(`   Submitting delivery (${aiResponseText.length} chars)...`);
-          const tx = await contract.submitDelivery(commissionId, aiResponseText, { gasLimit: 1000000 });
+          const tx = await contract.submitDelivery(commissionId, aiResponseText, { gasLimit: 3000000 });
           await tx.wait();
           console.log(`   ✅ Delivery submitted: ${tx.hash}`);
           console.log(`   💰 Escrow released automatically.`);
