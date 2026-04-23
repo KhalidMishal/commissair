@@ -4,6 +4,710 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    CommissionMarket: {
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      abi: [
+        {
+          inputs: [],
+          name: "BidClosed",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "BidTooHigh",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EmptyEndpoint",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EmptyPrompt",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EmptyResult",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidBid",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidBidWindow",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoBids",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoEscrow",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NotAssigned",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NotConsumer",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NotCreator",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NotDelivered",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NotOpen",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ReentrancyGuardReentrantCall",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ReviewStillOpen",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "TransferFailed",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "bidId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "creator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "BidAccepted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "bidId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "creator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "endpointURI",
+              type: "string",
+            },
+          ],
+          name: "BidPlaced",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "refund",
+              type: "uint256",
+            },
+          ],
+          name: "CommissionCancelled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "consumer",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "maxBudget",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "bidDeadline",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "promptURI",
+              type: "string",
+            },
+          ],
+          name: "CommissionCreated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "creator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "refund",
+              type: "uint256",
+            },
+          ],
+          name: "CommissionPaid",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "creator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "resultURI",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "reviewDeadline",
+              type: "uint256",
+            },
+          ],
+          name: "DeliverySubmitted",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "DEFAULT_REVIEW_WINDOW",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MIN_BID_WINDOW",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bidId",
+              type: "uint256",
+            },
+          ],
+          name: "acceptBid",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "approveDelivery",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "cancelOpenCommission",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "claimAfterReview",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "promptURI",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "bidWindow",
+              type: "uint256",
+            },
+          ],
+          name: "createCommission",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "finalizeLowestBid",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bidId",
+              type: "uint256",
+            },
+          ],
+          name: "getBid",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "endpointURI",
+                  type: "string",
+                },
+                {
+                  internalType: "bool",
+                  name: "active",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct CommissionMarket.Bid",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "getBidCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "getCommission",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "consumer",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxBudget",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "acceptedAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "bidDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "reviewDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "enum CommissionMarket.Status",
+                  name: "status",
+                  type: "uint8",
+                },
+                {
+                  internalType: "string",
+                  name: "promptURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "resultURI",
+                  type: "string",
+                },
+              ],
+              internalType: "struct CommissionMarket.Commission",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+          ],
+          name: "getCommissionBids",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "string",
+                  name: "endpointURI",
+                  type: "string",
+                },
+                {
+                  internalType: "bool",
+                  name: "active",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct CommissionMarket.Bid[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "startId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "limit",
+              type: "uint256",
+            },
+          ],
+          name: "getCommissions",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "consumer",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "creator",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "maxBudget",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "acceptedAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "bidDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "reviewDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "enum CommissionMarket.Status",
+                  name: "status",
+                  type: "uint8",
+                },
+                {
+                  internalType: "string",
+                  name: "promptURI",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "resultURI",
+                  type: "string",
+                },
+              ],
+              internalType: "struct CommissionMarket.Commission[]",
+              name: "items",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "nextCommissionId",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "endpointURI",
+              type: "string",
+            },
+          ],
+          name: "placeBid",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "bidId",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "commissionId",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "resultURI",
+              type: "string",
+            },
+          ],
+          name: "submitDelivery",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 1,
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
