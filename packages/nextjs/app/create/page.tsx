@@ -8,7 +8,7 @@ import { ArrowPathIcon, PaperAirplaneIcon, SparklesIcon, WalletIcon } from "@her
 import { useScaffoldReadContract, useScaffoldWriteContract, useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
-const AUCTION_SECONDS = 10n;
+const AUCTION_SECONDS = 180n;
 const COMMISSION_PAGE_SIZE = 25n;
 const demoBaselineKey = (chainId: number) => `commissair:demoBaseline:${chainId}`;
 
