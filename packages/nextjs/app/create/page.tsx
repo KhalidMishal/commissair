@@ -218,10 +218,11 @@ const Home: NextPage = () => {
           <div className="rounded-box border border-primary/10 bg-base-100 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <h2 className="font-semibold">Provider Node</h2>
             <div className="mt-3 rounded-box border border-primary/10 bg-base-200 p-3 font-mono text-xs text-primary">
-              yarn provider:mock --network localhost
+              yarn server:start
             </div>
             <p className="mt-3 text-sm text-base-content/60">
-              The demo node bids, finalizes the lowest bid, returns a mock result, and receives payment automatically.
+              The Gemini provider bids, finalizes the lowest bid, returns a generated result, and receives payment
+              automatically.
             </p>
           </div>
         </aside>
